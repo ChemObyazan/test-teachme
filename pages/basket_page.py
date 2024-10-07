@@ -1,21 +1,26 @@
+from locators.basket_page_locators import BasketPageLocators
 from pages.base_page import BasePage
-from locators.basket_locators import BasketPageLocators
+import allure
 
 class BasketPage(BasePage, BasketPageLocators):
 
-    def __init__(self, driver):
-        super().__init__(driver)
-        self.driver = driver
-
+    @allure.step("Открываю корзину")
     def open_basket(self):
         self.click(self.BUTTON_BASKET)
 
+    @allure.step("Проверяю, что корзина пуста")
     def assert_basket_is_empty(self):
-        self.assertions.assert_that_text_is_the_same(self.BASKET_IS_EMPTY, 'Корзина пуста')
+        self.assertions.assert_that_text_is_the_same(self.BASKET_IS_EMPTY, "Корзина пока пуста")
 
-    def apply_promo_code(self, promo_code):
-        self.fill(self.PROMO_CODE_INPUT, promo_code)
-        self.click(self.APPLY_PROMO_BUTTON)
+    @allure.step("Проверяю, что корзина не пуста")
+    def assert_basket_is_not_empty(self):
+        self.assertions.assert_that_element_doesnt_exist(self.BASKET_IS_EMPTY)
 
-    def make_order(self):
-        self.click(self.BUTTON_MAKE_ORDER)
+    @allure.step("Применяю промокод")
+    def apply_promo_code(self, code):
+        self.fill(self.PROMO_CODE, code)
+        self.click(self.BUTTON_USE_PROMO_CODE)
+
+    @allure.step("Проверяю, что промокод недействителен")
+    def assert_invalid_promo_code(self):
+        self.assertions.assert_that_element_is_visible(self.PROMO_CODE_IS_INVALID)

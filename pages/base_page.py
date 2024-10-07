@@ -1,34 +1,37 @@
-from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.wait import WebDriverWait
+from selenium.webdriver.common.action_chains import ActionChains
+from selenium.common.exceptions import TimeoutException, NoSuchElementException
+import allure
+
+from helpers.assertions import Assertions
 
 class BasePage:
+
     def __init__(self, driver):
         self.driver = driver
+        self.assertions = Assertions(driver)
 
-    def wait_for_element(self, by_locator, timeout=10):
-        """Ожидание видимости элемента на странице."""
-        WebDriverWait(self.driver, timeout).until(EC.visibility_of_element_located(by_locator))
+    @allure.step("Открываю страницу")
+    def open_page(self, url):
+        self.driver.get(url)
 
-    def click(self, by_locator):
-        """Нажатие на элемент."""
-        self.wait_for_element(by_locator)
-        self.driver.find_element(*by_locator).click()
+    @allure.step("Кликаю на элемент")
+    def click(self, selector):
+        try:
+            WebDriverWait(self.driver, 20).until(
+                EC.element_to_be_clickable(selector)
+            ).click()
+        except (TimeoutException, NoSuchElementException):
+            assert False, f"Элемент {selector} не найден"
 
-    def send_keys(self, by_locator, text):
-        """Ввод текста в элемент."""
-        self.wait_for_element(by_locator)
-        self.driver.find_element(*by_locator).send_keys(text)
+    @allure.step("Заполняю поле")
+    def fill(self, selector, text):
+        element = WebDriverWait(self.driver, 30).until(
+            EC.visibility_of_element_located(selector)
+        )
+        element.send_keys(text)
 
-    def get_text(self, by_locator):
-        """Получение текста из элемента."""
-        self.wait_for_element(by_locator)
-        return self.driver.find_element(*by_locator).text
-
-    def is_visible(self, by_locator):
-        """Проверка видимости элемента."""
-        self.wait_for_element(by_locator)
-        return self.driver.find_element(*by_locator).is_displayed()
-
-    def get_title(self):
-        """Получение заголовка страницы."""
-        return self.driver.title
+    @allure.step("Проверяю, что элемент существует")
+    def check_element_is_exist(self, selector):
+        return self.driver.find_elements(*selector)

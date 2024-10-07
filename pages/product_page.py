@@ -1,21 +1,27 @@
-from selenium.webdriver.common.by import By
+from locators.product_page_locators import ProductPageLocators
 from pages.base_page import BasePage
+import allure
 
-class ProductPage(BasePage):
-    def __init__(self, driver):
-        super().__init__(driver)
-        self.add_to_cart_button = (By.CSS_SELECTOR, 'button.add_to_cart')
-        self.product_name = (By.CSS_SELECTOR, 'h1.product_name')
-        self.product_price = (By.CSS_SELECTOR, 'div.product_price')
+class ProductPage(BasePage, ProductPageLocators):
 
-    def add_to_cart(self):
-        """Добавление товара в корзину."""
-        self.click(self.add_to_cart_button)
+    @allure.step("Проверяю, что страница товара открыта")
+    def assert_product_page_is_open(self):
+        self.assertions.assert_that_element_is_visible(self.PRODUCT_DESCRIPTION)
 
-    def get_product_name(self):
-        """Получение названия товара."""
-        return self.get_text(self.product_name)
+    @allure.step("Добавляю товар в корзину")
+    def add_to_basket(self):
+        self.click(self.BUTTON_ADD_TO_BASKET)
 
-    def get_product_price(self):
-        """Получение цены товара."""
-        return self.get_text(self.product_price)
+    @allure.step("Добавляю товар в избранное")
+    def add_to_favorites(self):
+        self.click(self.BUTTON_ADD_TO_FAVORITES)
+
+    @allure.step("Проверяю отображение изображений товара")
+    def assert_product_images_displayed(self):
+        self.assertions.assert_that_element_is_visible(self.PRODUCT_IMAGES)
+    
+    @allure.step("Проверяю детали товара")
+    def assert_product_details_displayed(self):
+        self.assertions.assert_that_element_is_visible(self.PRODUCT_DESCRIPTION)
+        self.assertions.assert_that_element_is_visible(self.PRODUCT_PRICE)
+
